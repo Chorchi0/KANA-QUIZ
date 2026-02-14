@@ -1,0 +1,1081 @@
+<!doctype html>
+<html lang="es">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>KANA-QUIZ</title>
+  <style>
+    :root{
+      --bg:#ffffff; --fg:#111; --muted:#666; --card:#fff; --border:#ddd; --soft:#fafafa;
+      --pill:#fff; --pillBorder:#ddd; --tab:#fafafa; --tabActive:#eaeaea;
+      --okBg:#eaffea; --okBr:#b6e3b6; --badBg:#ffecec; --badBr:#f0b6b6;
+      --btn:#f6f6f6; --btnHover:#eee; --th:#f5f5f5;
+      --input:#fff;
+    }
+    body.dark{
+      --bg:#0b0f14; --fg:#e8eef6; --muted:#aab6c5; --card:#0f1620; --border:#223041; --soft:#0e1620;
+      --pill:#0f1620; --pillBorder:#223041; --tab:#0e1620; --tabActive:#172434;
+      --okBg:#0f2a17; --okBr:#1d6f33; --badBg:#2a0f12; --badBr:#7a2630;
+      --btn:#132030; --btnHover:#1a2b40; --th:#132030;
+      --input:#0b1220;
+    }
+
+    body{
+      font-family:system-ui,Segoe UI,Roboto,Arial,sans-serif;
+      margin:0; padding:12px 12px 60px;
+      line-height:1.25;
+      background:var(--bg);
+      color:var(--fg);
+    }
+
+    .darkWrap{
+      position:fixed;
+      top:12px;
+      right:12px;
+      z-index:10;
+    }
+
+    .topbar{
+      display:flex;
+      justify-content:center;
+      align-items:center;
+      position:relative;
+      margin:0 0 10px;
+    }
+    .titleCenter{
+      font-size:28px;
+      font-weight:1000;
+      letter-spacing:2px;
+      margin:0;
+      text-align:center;
+    }
+
+    .row{
+      display:flex;
+      gap:10px;
+      flex-wrap:wrap;
+      align-items:center;
+      margin:10px 0;
+    }
+
+    .card{
+      border:1px solid var(--border);
+      border-radius:12px;
+      padding:12px;
+      margin:12px 0;
+      background:var(--card);
+    }
+
+    .muted{ color:var(--muted); font-size:13px; }
+    .small{ font-size:12px; }
+    .answers{
+      white-space:pre-wrap;
+      font-family:ui-monospace,Menlo,Consolas,monospace;
+      font-size:12px;
+    }
+
+    button{
+      padding:10px 12px;
+      border-radius:10px;
+      border:1px solid var(--border);
+      background:var(--btn);
+      font-size:15px;
+      cursor:pointer;
+      color:var(--fg);
+    }
+    button:hover{ background:var(--btnHover); }
+
+    input[type="text"]{
+      font-size:18px;
+      padding:10px 12px;
+      border-radius:10px;
+      border:1px solid var(--border);
+      min-width:260px;
+      background:var(--input);
+      color:var(--fg);
+    }
+
+    .pill{
+      display:inline-block;
+      padding:6px 10px;
+      border-radius:999px;
+      border:1px solid var(--pillBorder);
+      font-size:13px;
+      background:var(--pill);
+    }
+    .ok{ background:var(--okBg); border-color:var(--okBr); }
+    .bad{ background:var(--badBg); border-color:var(--badBr); }
+
+    .toggle{
+      display:flex;
+      align-items:center;
+      gap:8px;
+      border:1px solid var(--border);
+      border-radius:999px;
+      padding:6px 10px;
+      background:var(--soft);
+    }
+    .toggle input{ transform:scale(1.2); }
+
+    .tabs{ display:flex; gap:10px; margin:0 0 10px; }
+    .tab{
+      padding:12px 18px;
+      font-size:16px;
+      border-radius:999px;
+      border:1px solid var(--border);
+      background:var(--tab);
+      cursor:pointer;
+      user-select:none;
+    }
+    .tab.active{
+      background:var(--tabActive);
+      font-weight:800;
+    }
+    .section{ display:none; }
+    .section.active{ display:block; }
+
+    html, body { height: 100%; }
+
+body{
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+}
+
+.headerBar{ flex: 0 0 auto; }
+
+#secQuiz{
+  flex: 1 1 auto;            /* ocupa el espacio restante */
+  display: flex;
+  flex-direction: column;
+  align-items: center;        /* centro horizontal */
+  justify-content: center;    /* centro vertical */
+}
+
+    #secQuiz .row{
+      justify-content:center;
+      text-align:center;
+      width:100%;
+    }
+
+    .quizCenter{
+      display:flex;
+      justify-content:center;
+      width:100%;
+    }
+    .quizCard{
+      width:min(900px,96vw);
+      text-align:center;
+    }
+
+    .kana{
+      font-size:160px;
+      font-weight:1000;
+      margin:10px 0 18px;
+      line-height:1;
+    }
+
+    .quizInputRow{ justify-content:center; }
+    .bottomButtons{ justify-content:center !important; }
+
+    #finalCard{
+      width:min(900px,96vw);
+      text-align:center;
+    }
+
+    .select{
+      padding:10px 12px;
+      border-radius:10px;
+      border:1px solid var(--border);
+      font-size:15px;
+      background:var(--input);
+      color:var(--fg);
+    }
+    .guideWrap{ overflow:auto; }
+    table{ border-collapse:collapse; width:100%; min-width:520px; }
+    td,th{ border:1px solid var(--border); padding:10px; text-align:center; vertical-align:middle; }
+    th{ background:var(--th); }
+    .cellKana{ font-size:28px; font-weight:900; line-height:1.1; }
+    .cellRoma{ font-size:12px; color:var(--muted); margin-top:6px; }
+    .subTitle{ font-weight:900; margin:0 0 8px; font-size:14px; }
+    .spacer{ height:10px; }
+
+    /* =====================
+       Header bar (tabs top-left, title centered)
+    ====================== */
+    body{ margin:0; padding:12px 12px 60px; } /* top-left pegado, con padding general + espacio para footer */
+    .headerBar{
+  width:100%;
+  display:grid;
+  grid-template-columns: 1fr auto 1fr; /* simétrico */
+  align-items:center;
+  gap:12px;
+}
+.headerLeft{ justify-self:start; }
+.headerCenter{ justify-self:center; }
+
+
+    /* Tabs inside header */
+    .tabs{ margin:0; }
+
+    /* Fixed bottom-right credit */
+    .madeBy{
+      position:fixed;
+      right:12px;
+      bottom:10px;
+      z-index:10;
+      font-size:12px;
+      color:var(--muted);
+      background:color-mix(in srgb, var(--bg) 88%, transparent);
+      border:1px solid var(--border);
+      padding:6px 10px;
+      border-radius:999px;
+      backdrop-filter: blur(6px);
+    }
+
+
+    /* === Header: título centrado posta === */
+.headerBar{
+  width:100%;
+}
+.headerCenter{
+  justify-self:center;   /* clave: centra el bloque del medio en el grid */
+  text-align:center;
+}
+
+/* === Columna centrada para TODO el quiz (pills, botones, etc.) === */
+:root{ --quizW: min(900px, 96vw); }
+
+#secQuiz > .row,
+#secGuide > .row{
+  width: var(--quizW);
+  margin-left:auto;
+  margin-right:auto;
+}
+
+/* (opcional) que el card use el mismo ancho exacto */
+.quizCard, #finalCard{
+  width: var(--quizW);
+}
+
+/* === Input arriba, botones abajo === */
+.quizInputRow{
+  flex-direction: column;
+  align-items: center;
+  gap:10px;
+}
+
+.quizBtns{
+  display:flex;
+  gap:10px;
+  flex-wrap:wrap;
+  justify-content:center;
+}
+    
+  /* Centrar contenido del resultado final */
+#finalCard{
+  margin-left:auto;
+  margin-right:auto;
+  text-align:center;
+}
+
+#finalCard .row{
+  justify-content:center;
+  width:100%;
+}
+  
+  /* ===== Layout para centrado vertical REAL del quiz ===== */
+html, body { height: 100%; }
+
+body{
+  display:flex;
+  flex-direction:column;
+}
+
+/* El header ocupa su altura normal */
+.headerBar{ flex: 0 0 auto; }
+
+/* El quiz ocupa TODO el espacio restante del viewport */
+#secQuiz.section.active{
+  flex: 1 1 auto;
+  display:flex;
+  flex-direction:column;
+  justify-content:center;  /* centro vertical */
+  align-items:center;      /* centro horizontal */
+}
+
+/* La guía no la centro vertical (si querés, lo saco también) */
+#secGuide.section.active{
+  flex: 1 1 auto;
+  display:block;
+}
+
+  /* ===== Modal Resultado ===== */
+.modalOverlay{
+  position: fixed;
+  inset: 0;
+  background: rgba(0,0,0,.45);
+  display: none;
+  align-items: center;
+  justify-content: center;
+  padding: 16px;
+  z-index: 9999;
+}
+
+.modalOverlay.show{ display: flex; }
+
+.modalCard{
+  width: min(900px, 96vw);
+  max-height: min(80vh, 760px);
+  overflow: auto;
+  text-align: center;
+}
+
+.modalActions{
+  display:flex;
+  justify-content:center;
+  gap:10px;
+  flex-wrap:wrap;
+  margin-top: 12px;
+}
+
+/* ===== CENTRADO VERTICAL REAL DEL QUIZ ===== */
+
+/* El viewport completo */
+html, body {
+  height: 100%;
+}
+
+/* Body como layout vertical */
+body {
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+}
+
+/* Header ocupa su espacio normal */
+.headerBar {
+  flex: 0 0 auto;
+}
+
+/* La sección activa ocupa TODO el espacio restante */
+.section.active {
+  flex: 1 1 auto;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;  /* CENTRADO VERTICAL */
+  align-items: center;      /* CENTRADO HORIZONTAL */
+}
+
+/* Pero la guía NO la centramos vertical */
+#secGuide.section.active {
+  justify-content: flex-start;
+}
+
+    
+  </style>
+</head>
+<body>
+  <div class="darkWrap">
+    <label class="toggle" title="Modo oscuro">
+      <input id="togDark" type="checkbox" />
+      <span class="small">Modo oscuro</span>
+    </label>
+  </div>
+
+  <div class="headerBar">
+    <div class="headerLeft">
+      <div class="tabs">
+        <div class="tab active" id="tabQuiz">Quiz</div>
+        <div class="tab" id="tabGuide">Guía</div>
+      </div>
+    </div>
+    <div class="headerCenter">
+      <h1 class="titleCenter">KANA-QUIZ</h1>
+    </div>
+    <div></div>
+  </div>
+    
+   
+  <div class="section active" id="secQuiz">
+    <div class="row">
+      <span class="pill" id="modePill">Modo: Hiragana</span>
+      <span class="pill" id="progressPill">0 / 0</span>
+      <span class="pill" id="scorePill">Aciertos: 0</span>
+      <span class="pill" id="streakPill">Racha: 0</span>
+      <span class="pill" id="bestPill">Mejor: 0</span>
+    </div>
+
+    <div class="row">
+      <button id="btnHira">Hiragana</button>
+      <button id="btnKata">Katakana</button>
+      <button id="btnBoth">Ambos</button>
+
+      <label class="toggle" title="Incluye が/ぱ etc. en el quiz">
+        <input id="togVoiced" type="checkbox" checked />
+        <span class="small">Incluir dakuten/handakuten</span>
+      </label>
+
+      <label class="toggle" title="Si está ON acepta o como respuesta de を/ヲ">
+        <input id="togWoAsO" type="checkbox" checked />
+        <span class="small">Aceptar を como “o”</span>
+      </label>
+
+      <label class="toggle" title="Arma el quiz solo con lo que fallaste (si hay errores)">
+        <input id="togReviewOnly" type="checkbox" />
+        <span class="small">Repasar solo errores</span>
+      </label>
+    </div>
+
+    <div class="quizCenter">
+      <div class="card quizCard">
+        <div class="kana" id="kanaChar">あ</div>
+
+       <div class="row quizInputRow">
+    
+  <input id="answer" type="text" placeholder="Lectura (romaji)" autocomplete="off" />
+  <div class="quizBtns">
+    <button id="btnCheck">Comprobar</button>
+    <button id="btnSkip">Saltar</button>
+  </div>
+  
+</div>
+
+
+        <div class="muted">
+          Acepto: shi/si, chi/ti, tsu/tu, fu/hu, ji/zi/di, zu/du.
+          <span class="small">(Si te equivocás, espero 2s antes de avanzar.)</span>
+        </div>
+
+        <div class="row" id="resultRow" style="display:none">
+          <span class="pill" id="resultPill"></span>
+          <span class="muted" id="resultText"></span>
+        </div>
+      </div>
+    </div>
+
+    <div class="row bottomButtons">
+      <button id="btnShuffle">Mezclar</button>
+      <button id="btnReset">Reiniciar intento</button>
+      <button id="btnFinish">Finalizar</button>
+      <button id="btnRetryWrong" style="display:none">Repasar errores ahora</button>
+    </div>
+
+    
+  </div>
+
+  <div class="section" id="secGuide">
+    <div class="row" style="justify-content:center">
+      <select class="select" id="guideSelect">
+        <option value="hira">Hiragana</option>
+        <option value="kata">Katakana</option>
+      </select>
+
+      <label class="toggle">
+        <input id="togGuideRomaji" type="checkbox" checked />
+        <span class="small">Mostrar romaji</span>
+      </label>
+
+      <label class="toggle" title="Muestra tabla adicional con が/ぱ etc.">
+        <input id="togGuideVoiced" type="checkbox" />
+        <span class="small">Mostrar dakuten/handakuten</span>
+      </label>
+
+      <label class="toggle" title="Muestra combinaciones tipo きゃ / キャ">
+        <input id="togGuideCombo" type="checkbox" />
+        <span class="small">Mostrar combinaciones</span>
+      </label>
+    </div>
+
+    <div class="card guideWrap">
+      <div class="subTitle">Gojūon</div>
+      <table id="guideTable"></table>
+
+      <div class="spacer"></div>
+
+      <div id="voicedBlock" style="display:none">
+        <div class="subTitle">Dakuten / Handakuten</div>
+        <table id="voicedTable"></table>
+        <div class="spacer"></div>
+      </div>
+
+      <div id="comboBlock" style="display:none">
+        <div class="subTitle">Combinaciones (Yōon)</div>
+        <table id="comboTable"></table>
+      </div>
+    </div>
+  </div>
+
+<!-- Modal Resultado -->
+<div class="modalOverlay" id="resultModal" aria-hidden="true">
+  <div class="card modalCard" role="dialog" aria-modal="true" aria-labelledby="resultTitle">
+    <h2 id="resultTitle" style="margin:0 0 8px;font-size:16px">Resultado</h2>
+
+    <div class="row" style="justify-content:center">
+      <span class="pill" id="finalScore"></span>
+      <span class="pill" id="finalPct"></span>
+    </div>
+
+    <div class="muted">Errores (kana → tu respuesta → correcta):</div>
+    <div class="answers" id="wrongList">(sin errores)</div>
+
+    <div class="modalActions">
+      <button id="btnCloseResult">Cerrar</button>
+      <button id="btnRetryWrongModal" style="display:none">Repasar errores ahora</button>
+    </div>
+  </div>
+</div>
+  
+
+
+<script>
+  // ===== Dark mode (persist) =====
+  const togDark = document.getElementById("togDark");
+  const savedTheme = localStorage.getItem("kana_theme");
+  if(savedTheme === "dark"){ document.body.classList.add("dark"); togDark.checked = true; }
+  togDark.addEventListener("change", () => {
+    document.body.classList.toggle("dark", togDark.checked);
+    localStorage.setItem("kana_theme", togDark.checked ? "dark" : "light");
+  });
+
+  // ===== Tabs =====
+  const tabQuiz = document.getElementById("tabQuiz");
+  const tabGuide = document.getElementById("tabGuide");
+  const secQuiz = document.getElementById("secQuiz");
+  const secGuide = document.getElementById("secGuide");
+  function setTab(which){
+    const quizOn = which === "quiz";
+    tabQuiz.classList.toggle("active", quizOn);
+    tabGuide.classList.toggle("active", !quizOn);
+
+    // Force sections to swap (mobile-friendly)
+    secQuiz.classList.toggle("active", quizOn);
+    secGuide.classList.toggle("active", !quizOn);
+
+    // Safety: ensure only one is visible even if CSS is overridden
+secQuiz.style.display  = quizOn ? "flex" : "none";
+secGuide.style.display = quizOn ? "none" : "block";
+
+
+    // Bring you back to the top so it doesn't feel like "appears abajo"
+    window.scrollTo({ top: 0, behavior: "smooth" });
+  }
+  tabQuiz.onclick = () => setTab("quiz");
+  tabGuide.onclick = () => setTab("guide");
+  // Initial visibility
+  secQuiz.style.display = "flex";
+secGuide.style.display = "none";
+
+
+  // ===== Data (quiz) =====
+  const HIRA_BASE = [
+    ["あ","a"],["い","i"],["う","u"],["え","e"],["お","o"],
+    ["か","ka"],["き","ki"],["く","ku"],["け","ke"],["こ","ko"],
+    ["さ","sa"],["し","shi"],["す","su"],["せ","se"],["そ","so"],
+    ["た","ta"],["ち","chi"],["つ","tsu"],["て","te"],["と","to"],
+    ["な","na"],["に","ni"],["ぬ","nu"],["ね","ne"],["の","no"],
+    ["は","ha"],["ひ","hi"],["ふ","fu"],["へ","he"],["ほ","ho"],
+    ["ま","ma"],["み","mi"],["む","mu"],["め","me"],["も","mo"],
+    ["や","ya"],["ゆ","yu"],["よ","yo"],
+    ["ら","ra"],["り","ri"],["る","ru"],["れ","re"],["ろ","ro"],
+    ["わ","wa"],["を","wo"],["ん","n"],
+  ];
+  const HIRA_DAKUTEN = [
+    ["が","ga"],["ぎ","gi"],["ぐ","gu"],["げ","ge"],["ご","go"],
+    ["ざ","za"],["じ","ji"],["ず","zu"],["ぜ","ze"],["ぞ","zo"],
+    ["だ","da"],["ぢ","ji"],["づ","zu"],["で","de"],["ど","do"],
+    ["ば","ba"],["び","bi"],["ぶ","bu"],["べ","be"],["ぼ","bo"],
+  ];
+  const HIRA_HANDAKUTEN = [["ぱ","pa"],["ぴ","pi"],["ぷ","pu"],["ぺ","pe"],["ぽ","po"]];
+
+  const KATA_BASE = [
+    ["ア","a"],["イ","i"],["ウ","u"],["エ","e"],["オ","o"],
+    ["カ","ka"],["キ","ki"],["ク","ku"],["ケ","ke"],["コ","ko"],
+    ["サ","sa"],["シ","shi"],["ス","su"],["セ","se"],["ソ","so"],
+    ["タ","ta"],["チ","chi"],["ツ","tsu"],["テ","te"],["ト","to"],
+    ["ナ","na"],["ニ","ni"],["ヌ","nu"],["ネ","ne"],["ノ","no"],
+    ["ハ","ha"],["ヒ","hi"],["フ","fu"],["ヘ","he"],["ホ","ho"],
+    ["マ","ma"],["ミ","mi"],["ム","mu"],["メ","me"],["モ","mo"],
+    ["ヤ","ya"],["ユ","yu"],["ヨ","yo"],
+    ["ラ","ra"],["リ","ri"],["ル","ru"],["レ","re"],["ロ","ro"],
+    ["ワ","wa"],["ヲ","wo"],["ン","n"],
+  ];
+  const KATA_DAKUTEN = [
+    ["ガ","ga"],["ギ","gi"],["グ","gu"],["ゲ","ge"],["ゴ","go"],
+    ["ザ","za"],["ジ","ji"],["ズ","zu"],["ゼ","ze"],["ゾ","zo"],
+    ["ダ","da"],["ヂ","ji"],["ヅ","zu"],["デ","de"],["ド","do"],
+    ["バ","ba"],["ビ","bi"],["ブ","bu"],["ベ","be"],["ボ","bo"],
+  ];
+  const KATA_HANDAKUTEN = [["パ","pa"],["ピ","pi"],["プ","pu"],["ペ","pe"],["ポ","po"]];
+
+  const ALIASES_BASE = {
+    "shi": ["si"],
+    "chi": ["ti"],
+    "tsu": ["tu"],
+    "fu":  ["hu"],
+    "ji":  ["zi","di"],
+    "zu":  ["du"],
+  };
+
+  function normalize(s){ return (s||"").trim().toLowerCase().replace(/\s+/g,""); }
+
+  // ===== Quiz state =====
+  let mode = "hira";
+  let items = [];
+  let idx = 0;
+  let correctCount = 0;
+  let seen = 0;
+  let wrong = [];
+
+  let streak = 0;
+  let bestStreak = 0;
+  let lastWrongItems = [];
+
+  const togVoiced = document.getElementById("togVoiced");
+  const togWoAsO = document.getElementById("togWoAsO");
+  const togReviewOnly = document.getElementById("togReviewOnly");
+
+  const elKana = document.getElementById("kanaChar");
+  const elAnswer = document.getElementById("answer");
+  const elMode = document.getElementById("modePill");
+  const elProg = document.getElementById("progressPill");
+  const elScore = document.getElementById("scorePill");
+  const elStreak = document.getElementById("streakPill");
+  const elBest = document.getElementById("bestPill");
+
+  const elResultRow = document.getElementById("resultRow");
+  const elResultPill = document.getElementById("resultPill");
+  const elResultText = document.getElementById("resultText");
+
+ // const elFinalCard = document.getElementById("finalCard");
+  const elFinalScore = document.getElementById("finalScore");
+  const elFinalPct = document.getElementById("finalPct");
+  const elWrongList = document.getElementById("wrongList");
+  const btnRetryWrong = document.getElementById("btnRetryWrong");
+
+const resultModal = document.getElementById("resultModal");
+const btnCloseResult = document.getElementById("btnCloseResult");
+const btnRetryWrongModal = document.getElementById("btnRetryWrongModal");
+
+  function buildAliases(){
+    const aliases = (typeof structuredClone === "function")
+      ? structuredClone(ALIASES_BASE)
+      : JSON.parse(JSON.stringify(ALIASES_BASE));
+    aliases["wo"] = togWoAsO.checked ? ["o"] : [];
+    return aliases;
+  }
+
+  function isCorrect(user, expected, aliases){
+    user = normalize(user);
+    expected = normalize(expected);
+    if(user === expected) return true;
+    const list = aliases[expected] || [];
+    return list.includes(user);
+  }
+
+  function buildItemsFromMode(){
+    const includeVoiced = togVoiced.checked;
+    const HIRA = includeVoiced ? [...HIRA_BASE, ...HIRA_DAKUTEN, ...HIRA_HANDAKUTEN] : [...HIRA_BASE];
+    const KATA = includeVoiced ? [...KATA_BASE, ...KATA_DAKUTEN, ...KATA_HANDAKUTEN] : [...KATA_BASE];
+    if(mode === "hira") return [...HIRA];
+    if(mode === "kata") return [...KATA];
+    return [...HIRA, ...KATA];
+  }
+
+  function shuffle(array){
+    for(let i=array.length-1;i>0;i--){
+      const j = Math.floor(Math.random()*(i+1));
+      [array[i],array[j]] = [array[j],array[i]];
+    }
+    return array;
+  }
+
+  function updateHeader(){
+    const modeLabel = mode==="hira" ? "Hiragana" : mode==="kata" ? "Katakana" : "Ambos";
+    elMode.textContent = "Modo: " + modeLabel;
+    elProg.textContent = `${seen} / ${items.length}`;
+    elScore.textContent = `Aciertos: ${correctCount}`;
+    elStreak.textContent = `Racha: ${streak}`;
+    elBest.textContent = `Mejor: ${bestStreak}`;
+  }
+
+  function showCurrent(){
+    if(idx >= items.length){ finish(); return; }
+    elKana.textContent = items[idx][0];
+    elResultRow.style.display = "none";
+  }
+
+  function resetAttempt(keepOrder=false){
+    if(togReviewOnly.checked && lastWrongItems.length){
+      items = [...lastWrongItems];
+    } else {
+      items = buildItemsFromMode();
+    }
+    if(!keepOrder) shuffle(items);
+
+    idx = 0;
+    correctCount = 0;
+    seen = 0;
+    wrong = [];
+    streak = 0;
+
+   // elFinalCard.style.display = "none";
+    elResultRow.style.display = "none";
+    btnRetryWrong.style.display = "none";
+
+    updateHeader();
+    showCurrent();
+    elAnswer.value = "";
+    elAnswer.focus();
+    
+    closeResultModal();
+btnRetryWrongModal.style.display = "none";
+
+  }
+
+  function check(){
+    if(idx >= items.length) return;
+
+    const aliases = buildAliases();
+    const [kana, expected] = items[idx];
+    const user = elAnswer.value;
+
+    seen += 1;
+
+    const ok = isCorrect(user, expected, aliases);
+    if(ok){
+      correctCount += 1;
+      streak += 1;
+      if(streak > bestStreak) bestStreak = streak;
+
+      elResultPill.textContent = "Correcto";
+      elResultPill.className = "pill ok";
+      elResultText.textContent = `${kana} = ${expected}`;
+    } else {
+      streak = 0;
+
+      elResultPill.textContent = "Incorrecto";
+      elResultPill.className = "pill bad";
+      elResultText.textContent = `Era: ${expected}`;
+      wrong.push({kana, user: normalize(user)||"(vacío)", expected});
+    }
+
+    elResultRow.style.display = "flex";
+    updateHeader();
+
+    idx += 1;
+    elAnswer.value = "";
+
+    const delayMs = ok ? 350 : 2000;
+    setTimeout(() => { showCurrent(); elAnswer.focus(); }, delayMs);
+  }
+
+  function skip(){
+    if(idx >= items.length) return;
+
+    const [kana, expected] = items[idx];
+    seen += 1;
+    streak = 0;
+
+    wrong.push({kana, user:"(saltado)", expected});
+
+    elResultPill.textContent = "Saltado";
+    elResultPill.className = "pill bad";
+    elResultText.textContent = `Era: ${expected}`;
+
+    elResultRow.style.display = "flex";
+    updateHeader();
+
+    idx += 1;
+    elAnswer.value = "";
+    setTimeout(() => { showCurrent(); elAnswer.focus(); }, 250);
+  }
+
+  function finish(){
+    const total = items.length;
+    const pct = total ? Math.round((correctCount/total)*100) : 0;
+
+    elFinalScore.textContent = `Aciertos: ${correctCount} / ${total}`;
+    elFinalPct.textContent = `Porcentaje: ${pct}%`;
+    elWrongList.textContent = wrong.length
+      ? wrong.map(w => `${w.kana}  →  ${w.user}  →  ${w.expected}`).join("\n")
+      : "(sin errores)";
+
+    const map = new Map();
+    for(const w of wrong){
+      const key = `${w.kana}||${w.expected}`;
+      map.set(key, [w.kana, w.expected]);
+    }
+    lastWrongItems = Array.from(map.values());
+
+    btnRetryWrong.style.display = lastWrongItems.length ? "inline-block" : "none";
+
+   // elFinalCard.style.display = "block";
+   btnRetryWrongModal.style.display = lastWrongItems.length ? "inline-block" : "none";
+openResultModal();
+
+    elResultRow.style.display = "none";
+
+    if(togReviewOnly.checked && lastWrongItems.length){
+      setTimeout(() => resetAttempt(false), 250);
+    }
+  }
+  
+  function openResultModal(){
+  resultModal.classList.add("show");
+  resultModal.setAttribute("aria-hidden", "false");
+}
+
+function closeResultModal(){
+  resultModal.classList.remove("show");
+  resultModal.setAttribute("aria-hidden", "true");
+}
+
+/* cerrar al tocar fuera */
+resultModal.addEventListener("click", (e) => {
+  if(e.target === resultModal) closeResultModal();
+});
+/* cerrar con ESC */
+window.addEventListener("keydown", (e) => {
+  if(e.key === "Escape" && resultModal.classList.contains("show")) closeResultModal();
+});
+
+btnCloseResult.onclick = closeResultModal;
+
+  document.getElementById("btnHira").onclick = () => { mode="hira"; resetAttempt(false); };
+  document.getElementById("btnKata").onclick = () => { mode="kata"; resetAttempt(false); };
+  document.getElementById("btnBoth").onclick = () => { mode="both"; resetAttempt(false); };
+
+  document.getElementById("btnShuffle").onclick = () => resetAttempt(false);
+  document.getElementById("btnReset").onclick = () => resetAttempt(true);
+  document.getElementById("btnFinish").onclick = () => finish();
+
+  document.getElementById("btnCheck").onclick = () => check();
+  document.getElementById("btnSkip").onclick = () => skip();
+
+  btnRetryWrong.onclick = () => {
+    if(!lastWrongItems.length) return;
+    togReviewOnly.checked = true;
+    resetAttempt(false);
+  };
+
+btnRetryWrongModal.onclick = () => {
+  if(!lastWrongItems.length) return;
+  closeResultModal();
+  togReviewOnly.checked = true;
+  resetAttempt(false);
+};
+
+
+  togVoiced.addEventListener("change", () => resetAttempt(false));
+  elAnswer.addEventListener("keydown", (e) => {
+    if(e.key === "Enter"){ e.preventDefault(); check(); }
+  });
+
+  // ===== Guide tables =====
+  const guideSelect = document.getElementById("guideSelect");
+  const togGuideRomaji = document.getElementById("togGuideRomaji");
+  const togGuideVoiced = document.getElementById("togGuideVoiced");
+  const togGuideCombo = document.getElementById("togGuideCombo");
+
+  const guideTable = document.getElementById("guideTable");
+  const voicedTable = document.getElementById("voicedTable");
+  const comboTable = document.getElementById("comboTable");
+
+  const voicedBlock = document.getElementById("voicedBlock");
+  const comboBlock = document.getElementById("comboBlock");
+
+  const GOJUON_ROMAJI = [
+    ["a","i","u","e","o"],
+    ["ka","ki","ku","ke","ko"],
+    ["sa","shi","su","se","so"],
+    ["ta","chi","tsu","te","to"],
+    ["na","ni","nu","ne","no"],
+    ["ha","hi","fu","he","ho"],
+    ["ma","mi","mu","me","mo"],
+    ["ya","","yu","","yo"],
+    ["ra","ri","ru","re","ro"],
+    ["wa","","","","wo"],
+    ["n","","","",""]
+  ];
+  const GOJUON_HIRA = [
+    ["あ","い","う","え","お"],
+    ["か","き","く","け","こ"],
+    ["さ","し","す","せ","そ"],
+    ["た","ち","つ","て","と"],
+    ["な","に","ぬ","ね","の"],
+    ["は","ひ","ふ","へ","ほ"],
+    ["ま","み","む","め","も"],
+    ["や","","ゆ","","よ"],
+    ["ら","り","る","れ","ろ"],
+    ["わ","","","","を"],
+    ["ん","","","",""]
+  ];
+  const GOJUON_KATA = [
+    ["ア","イ","ウ","エ","オ"],
+    ["カ","キ","ク","ケ","コ"],
+    ["サ","シ","ス","セ","ソ"],
+    ["タ","チ","ツ","テ","ト"],
+    ["ナ","ニ","ヌ","ネ","ノ"],
+    ["ハ","ヒ","フ","ヘ","ホ"],
+    ["マ","ミ","ム","メ","モ"],
+    ["ヤ","","ユ","","ヨ"],
+    ["ラ","リ","ル","レ","ロ"],
+    ["ワ","","","","ヲ"],
+    ["ン","","","",""]
+  ];
+
+  const VOICED_HEADER = ["", "a","i","u","e","o"];
+  const VOICED_ROMAJI = [
+    ["g","ga","gi","gu","ge","go"],
+    ["z","za","ji","zu","ze","zo"],
+    ["d","da","ji","zu","de","do"],
+    ["b","ba","bi","bu","be","bo"],
+    ["p","pa","pi","pu","pe","po"],
+  ];
+  const VOICED_HIRA = [
+    ["g","が","ぎ","ぐ","げ","ご"],
+    ["z","ざ","じ","ず","ぜ","ぞ"],
+    ["d","だ","ぢ","づ","で","ど"],
+    ["b","ば","び","ぶ","べ","ぼ"],
+    ["p","ぱ","ぴ","ぷ","ぺ","ぽ"],
+  ];
+  const VOICED_KATA = [
+    ["g","ガ","ギ","グ","ゲ","ゴ"],
+    ["z","ザ","ジ","ズ","ゼ","ゾ"],
+    ["d","ダ","ヂ","ヅ","デ","ド"],
+    ["b","バ","ビ","ブ","ベ","ボ"],
+    ["p","パ","ピ","プ","ペ","ポ"],
+  ];
+
+  const YOON_HEADER = ["", "ya","yu","yo"];
+  const YOON_ROMAJI = [
+    ["k","kya","kyu","kyo"],
+    ["s","sha","shu","sho"],
+    ["t","cha","chu","cho"],
+    ["n","nya","nyu","nyo"],
+    ["h","hya","hyu","hyo"],
+    ["m","mya","myu","myo"],
+    ["r","rya","ryu","ryo"],
+    ["g","gya","gyu","gyo"],
+    ["j","ja","ju","jo"],
+    ["b","bya","byu","byo"],
+    ["p","pya","pyu","pyo"],
+  ];
+  const YOON_HIRA = [
+    ["k","きゃ","きゅ","きょ"],
+    ["s","しゃ","しゅ","しょ"],
+    ["t","ちゃ","ちゅ","ちょ"],
+    ["n","にゃ","にゅ","にょ"],
+    ["h","ひゃ","ひゅ","ひょ"],
+    ["m","みゃ","みゅ","みょ"],
+    ["r","りゃ","りゅ","りょ"],
+    ["g","ぎゃ","ぎゅ","ぎょ"],
+    ["j","じゃ","じゅ","じょ"],
+    ["b","びゃ","びゅ","びょ"],
+    ["p","ぴゃ","ぴゅ","ぴょ"],
+  ];
+  const YOON_KATA = [
+    ["k","キャ","キュ","キョ"],
+    ["s","シャ","シュ","ショ"],
+    ["t","チャ","チュ","チョ"],
+    ["n","ニャ","ニュ","ニョ"],
+    ["h","ヒャ","ヒュ","ヒョ"],
+    ["m","ミャ","ミュ","ミョ"],
+    ["r","リャ","リュ","リョ"],
+    ["g","ギャ","ギュ","ギョ"],
+    ["j","ジャ","ジュ","ジョ"],
+    ["b","ビャ","ビュ","ビョ"],
+    ["p","ピャ","ピュ","ピョ"],
+  ];
+
+  function renderGridGojouon(){
+    const type = guideSelect.value;
+    const showRoma = togGuideRomaji.checked;
+    const grid = (type === "hira") ? GOJUON_HIRA : GOJUON_KATA;
+
+    let html = "";
+    html += "<tr><th></th><th>a</th><th>i</th><th>u</th><th>e</th><th>o</th></tr>";
+    const rowLabels = ["(vocales)","k","s","t","n","h","m","y","r","w","n"];
+    for(let r=0;r<grid.length;r++){
+      html += `<tr><th>${rowLabels[r]}</th>`;
+      for(let c=0;c<5;c++){
+        const k = grid[r][c] || "";
+        const ro = GOJUON_ROMAJI[r][c] || "";
+        if(!k) html += "<td></td>";
+        else html += `<td><div class="cellKana">${k}</div>${showRoma ? `<div class="cellRoma">${ro}</div>` : ""}</td>`;
+      }
+      html += "</tr>";
+    }
+    guideTable.innerHTML = html;
+  }
+
+  function renderGridVoiced(){
+    const type = guideSelect.value;
+    const showRoma = togGuideRomaji.checked;
+    const grid = (type === "hira") ? VOICED_HIRA : VOICED_KATA;
+
+    let html = "<tr>";
+    for(const h of VOICED_HEADER) html += `<th>${h}</th>`;
+    html += "</tr>";
+
+    for(let r=0;r<grid.length;r++){
+      html += `<tr><th>${grid[r][0]}</th>`;
+      for(let c=1;c<6;c++){
+        const k = grid[r][c];
+        const ro = VOICED_ROMAJI[r][c];
+        html += `<td><div class="cellKana">${k}</div>${showRoma ? `<div class="cellRoma">${ro}</div>` : ""}</td>`;
+      }
+      html += "</tr>";
+    }
+    voicedTable.innerHTML = html;
+  }
+
+  function renderGridCombo(){
+    const type = guideSelect.value;
+    const showRoma = togGuideRomaji.checked;
+    const grid = (type === "hira") ? YOON_HIRA : YOON_KATA;
+
+    let html = "<tr>";
+    for(const h of YOON_HEADER) html += `<th>${h}</th>`;
+    html += "</tr>";
+
+    for(let r=0;r<grid.length;r++){
+      html += `<tr><th>${grid[r][0]}</th>`;
+      for(let c=1;c<4;c++){
+        const k = grid[r][c];
+        const ro = YOON_ROMAJI[r][c];
+        html += `<td><div class="cellKana">${k}</div>${showRoma ? `<div class="cellRoma">${ro}</div>` : ""}</td>`;
+      }
+      html += "</tr>";
+    }
+    comboTable.innerHTML = html;
+  }
+
+  function renderGuideAll(){
+    renderGridGojouon();
+
+    voicedBlock.style.display = togGuideVoiced.checked ? "block" : "none";
+    if(togGuideVoiced.checked) renderGridVoiced();
+
+    comboBlock.style.display = togGuideCombo.checked ? "block" : "none";
+    if(togGuideCombo.checked) renderGridCombo();
+  }
+
+  guideSelect.addEventListener("change", renderGuideAll);
+  togGuideRomaji.addEventListener("change", renderGuideAll);
+  togGuideVoiced.addEventListener("change", renderGuideAll);
+  togGuideCombo.addEventListener("change", renderGuideAll);
+
+  // Start
+  renderGuideAll();
+  resetAttempt(false);
+  
+  </script>
+  <div class="madeBy">made by Geppe</div>
+  
+  
+  
+</body>
+
+</html>
